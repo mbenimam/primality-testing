@@ -1,14 +1,11 @@
-
 import os
 
-from src.experiments import *
-from src.fonctions import *
-
-import unittest
-import tests.test
-
-import numpy as np
-
+from prime_testing.arithmetic import my_expo_mod, my_gcd, my_inverse_bezout
+from prime_testing.experiments import (estimate_proba_test_primality, estimate_proba_test_rabin,
+                                       experience_carmichael, experience_carmichael3_t, experience_carmichael_t,
+                                       experience_comptage_premier_naiif, experience_exp_mod, experience_first_test,
+                                       experience_gcd_inverse, experiment_gen_rsa, experiment_RSA)
+from prime_testing.primality import first_test, gen_carmichael3, test_fermat, test_miller_rabin
 
 
 def calcul_gcd():
@@ -22,7 +19,9 @@ def calcul_inverse():
 	a = int(input("Entrez a: "))
 	N = int(input("Entrez N: "))
 	inv = my_inverse_bezout(a, N)
-	if inv:
+	if inv is None:
+		print(f"{a} n'a pas d'inverse modulo {N}")
+	else:
 		print(f"{a}*{inv} = {(a*inv) % N} [{N}]")
 ##Question 1.c
 def q1c():
@@ -64,9 +63,6 @@ def q2d():
 ##Question 2.e
 def q2e():
 	print(gen_carmichael3(1e4))
-	#187054437571
-	#266724927361
-	#3610008963601
 
 ##Question 2.f
 def q2f():
@@ -78,40 +74,36 @@ def q2f2():
 
 
 def calcul_fermat_test():
-	return 0
+	p = ["est composé", "est peut-être premier"]
+	print("********** teste de Fermat *********")
+	N = int(input("Entrez N à tester : "))
+	print(f"{N} {p[test_fermat(N)]}")
 ##Question 3.b / c
 def q3bc():
 	for i in range(3):
-		# estimate_proba_test_fermat(50000, 100000, mode=i)
 		estimate_proba_test_primality(50000, test_fermat, mode=i)
 
 def calcul_miller_rabin():
-	return 0
+	p = ["est composé", "est peut-être premier"]
+	print("********** teste de Miller-Rabin *********")
+	N = int(input("Entrez N à tester : "))
+	print(f"{N} {p[test_miller_rabin(N)]}")
 
 def q4b():
 	estimate_proba_test_rabin(50, maxSize=1000000)
 
 def q4c():
-	# experience_miller_rabin()
 	for i in range(3):
-	# estimate_proba_test_fermat(50000, 100000, mode=i)
 		estimate_proba_test_primality(50000, test_miller_rabin, mode=i)
 
 def q4d():
 	experiment_gen_rsa(nb_bits_max=1024, step_size=64, n_exp=10)
-	return 0
 
 def bonus():
 	experiment_RSA()
-	return 0
 
 
-def lancer_tests():
-	suite = unittest.TestLoader().loadTestsFromModule(tests.test)
-	unittest.TextTestRunner(verbosity=2).run(suite)
-
-menu = [("Lancer tout les unittest", lancer_tests),
-		("Question 1.a (calcul pgcd)", calcul_gcd),
+menu = [("Question 1.a (calcul pgcd)", calcul_gcd),
 		("Question 1.b (calcul inverse)", calcul_inverse),
 		("Question 1.c (complexité pgcd, et inverse)", q1c),
 		("Question 1.d (calcul expo modulaire)", calcul_expo_mod),
@@ -133,33 +125,38 @@ menu = [("Lancer tout les unittest", lancer_tests),
 
 
 ###Menu
-while True:
+def main():
+	while True:
 
-	os.system('cls' if os.name=='nt' else 'clear')
-
-	print("-1: Stop")
-
-	for i, (name, _) in enumerate(menu):
-		print(f"{i}: {name}")
-
-	selected = input("Please enter your choice: ")
-
-	try:
-		selected = int(selected)
-
-	except ValueError:
-		print(f"{selected} is not a number.")
-		continue
-
-	if selected == -1:
-		break
-
-	else:
-
-		if selected < 0 or selected >= len(menu):
-			print(f"{selected} is an invalid choice.")
-			continue
-		
 		os.system('cls' if os.name=='nt' else 'clear')
-		menu[selected][1]()
-		input("press any key to continue ....")
+
+		print("-1: Stop")
+
+		for i, (name, _) in enumerate(menu):
+			print(f"{i}: {name}")
+
+		selected = input("Please enter your choice: ")
+
+		try:
+			selected = int(selected)
+
+		except ValueError:
+			print(f"{selected} is not a number.")
+			continue
+
+		if selected == -1:
+			break
+
+		else:
+
+			if selected < 0 or selected >= len(menu):
+				print(f"{selected} is an invalid choice.")
+				continue
+		
+			os.system('cls' if os.name=='nt' else 'clear')
+			menu[selected][1]()
+			input("press any key to continue ....")
+
+
+if __name__ == "__main__":
+	main()

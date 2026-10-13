@@ -1,9 +1,14 @@
-from src.Drawer import Drawer, drawConfusionMatrix
-import numpy as np
-import matplotlib.pyplot as plt
-import time
-from src.fonctions import *
 import random
+import time
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from prime_testing.arithmetic import my_expo_mod, my_gcd, my_gcd_etendu, my_inverse, my_inverse_bezout
+from prime_testing.plotting import Drawer, drawConfusionMatrix, save_path
+from prime_testing.primality import (first_test, gen_carmichael, gen_carmichael3, gen_carmichael_3_list,
+                                     isCarmichael, test_miller_rabin)
+from prime_testing.rsa import RSA, decode, encode, gen_rsa
 
 def timeit(method, *args):
     """
@@ -14,24 +19,6 @@ def timeit(method, *args):
     method(*args)
     return time.time() - start_time
 
-def experience_euclide(n_digit_max=128, step_size=2, n_exp=10):
-    """
-    dessiner le temps d'execution d'euclide
-    par rapport à la taille des nombres
-    """
-    drawer = Drawer()
-    
-    # pour chaque taille de nombre
-    for i in range(1,n_digit_max,step_size):
-        # faire la moyenne des n_exp lancé
-        mean_exec = 0
-        for exp in range(n_exp):
-            a = random.getrandbits(i+1)
-            b = random.getrandbits(i)
-            mean_exec += timeit(my_gcd_etendu, a, b)/n_exp
-        drawer.add(name="my_gcd", time=mean_exec, size=i)
-    drawer.draw()
-
 """
 Question 1.c
 """
@@ -39,10 +26,8 @@ def experience_gcd_inverse(n, step=1, n_exp=10, inverse=True):
 
     drawer = Drawer(title="Temps en fonction de N")
     
-    mean_exec = 0
     for i in range(3, n, step):
 
-        
         mean_exec = 0
         gcd_time = 0
         gcd_etendu_time = 0
@@ -84,7 +69,6 @@ def experience_exp_mod(n, step=1, n_exp=10, naiive=False):
 
         mean_exec1 = 0
         mean_exec2 = 0
-        #print(i)
         for exp in range(n_exp):
             a = random.getrandbits(1024)
             b = random.getrandbits(i)
@@ -186,24 +170,6 @@ def experience_carmichael3_t(tmax=5*60):
     print("Plus grand nombre de carmicheal trouvé: ", best)
 
 
-#Inutile ?
-def experience_gen_carmichael_3(N=10000):
-    """
-    """
-    premiers = [i for i in range(3, N, 2) if first_test(i)]
-    maxn = (0, [])
-
-    for i in range(len(premiers)):
-        for j in range(i+1, len(premiers)):
-            for k in range(j+1, len(premiers)):
-                n = premiers[i]*premiers[j]*premiers[k]
-                if(isCarmichael_facteurs(n, [premiers[i], premiers[j], premiers[k]])):
-                    if(n > maxn[0] ):
-                        maxn = (n, [premiers[i], premiers[j], premiers[k]])
-                        print(n ," = ", "x".join(map(str, [premiers[i], premiers[j], premiers[k]])))
-    return maxn
-
-
 def generateRandomCompositeImp(maxSize=100000):
 
     notPrime = random.randrange(4, maxSize)
@@ -226,7 +192,6 @@ def estimate_proba_test_primality(n, testFunction, maxSize=10000, mode=0):
 
         Ne retourne rien mais print la probabilité de succes estimé.
     """
-    # error_counter = 0
     titles = ["carmichael", "aleatoire composé", "aleatoire"]
     print("Estimating proba fermat mode = ", titles[mode])
 
@@ -250,13 +215,8 @@ def estimate_proba_test_primality(n, testFunction, maxSize=10000, mode=0):
         mayPrime = testFunction(prime)
         isPrime  = first_test(prime)
 
-        # if mayPrime != isPrime:
-            #print(f"Error on {prime} with a = {a}")
-        #    error_counter += 1
         confusion[1-mayPrime, 1-isPrime] += 1
 
-    # error_pourcent = error_counter/n
-    # print(f"{error_counter} erreurs rencontrées sur {n} valeurs, soit une probabilité d'erreur de {round(error_pourcent*100, 3)}% ({round(error_pourcent, 6)})")
     confusion = confusion/confusion.sum()
     drawConfusionMatrix(confusion, "confusion_"+testFunction.__name__+"_"+titles[mode])
 
@@ -281,7 +241,6 @@ def estimate_proba_test_rabin(n, maxSize=100000):
     plt.ylabel("probabilité d'erreur (entre 0 et 1)")
     plt.title("probabilité d'erreur en fonction de T du test de Miller Rabin")
 
-    # if mode == 0:
     carmichael_list = gen_carmichael_3_list(3e3, 50)
 
     for mode in range(3):
@@ -296,7 +255,7 @@ def estimate_proba_test_rabin(n, maxSize=100000):
             for i in range(n):
 
                 if mode == 0:
-                    prime = random.choice(carmichael_list)# int(gen_carmichael3(1e5)) #random.choice(carmichael_list) #int(gen_carmichael3(2e2)) # 
+                    prime = random.choice(carmichael_list)
 
                 elif mode == 1:
                     prime = generateRandomCompositeImp(maxSize)
@@ -319,24 +278,10 @@ def estimate_proba_test_rabin(n, maxSize=100000):
 
         plt.plot(x, y, label=modeLabel[mode])
 
-    import os
-    fp = os.path.abspath("rapport/graphs")
     plt.legend(loc='best')
-    plt.savefig(os.path.join(fp, "miller_rabin_test_T.png"))
+    plt.savefig(save_path("miller_rabin_test_T"))
     plt.show()
 
-
-# def experience_miller_rabin(N=1e5):
-
-#     annotations = np.array([1 if first_test(i) else 0 for i in range(5, int(N), 2)])
-#     predictions = np.array([1 if test_miller_rabin(i) else 0 for i in range(5, int(N), 2)])
-
-#     confusion = np.zeros((2,2))
-
-#     for i in range(len(annotations)):
-#         confusion[1-predictions[i], 1-annotations[i]] += 1
-
-#     drawConfusionMatrix(confusion)
 
 def experiment_gen_rsa(nb_bits_max=128, step_size=2, n_exp=10):
     drawer = Drawer()
@@ -362,4 +307,3 @@ def experiment_RSA():
     s = encode(m, public_key)
     d = decode(s, private_key)
     print(f"message envoyé: {m}, message décodé: {d}, temps encodage_decodage : {time.time() - t}")
-

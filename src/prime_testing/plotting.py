@@ -1,17 +1,22 @@
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 import os
 
-fp = os.path.abspath("rapport/graphs")
+# dossier de sortie des graphes, créé à la demande
+fp = os.path.abspath(os.environ.get("PRIME_TESTING_PLOTS", "plots"))
+
+
+def save_path(name):
+    os.makedirs(fp, exist_ok=True)
+    return os.path.join(fp, name+".png")
+
 
 class Drawer(object):
 
-    def __init__(self, save_path=fp, title="Temps en fonction de N"):
+    def __init__(self, title="Temps en fonction de N"):
         self.title = title
         self.times = {}
-        self.save_path = save_path
 
     def add(self, name, time, size):
         if name not in self.times.keys():
@@ -40,7 +45,7 @@ class Drawer(object):
 
 
         plt.legend(loc='best')
-        plt.savefig(os.path.join(fp, self.title+".png").replace("\\","/"))
+        plt.savefig(save_path(self.title))
         plt.show()
 
 def drawConfusionMatrix(confusion, title="confusion_matrix"):
@@ -51,10 +56,9 @@ def drawConfusionMatrix(confusion, title="confusion_matrix"):
     ax= plt.subplot()
     sns.heatmap(confusion, annot=True, ax = ax,fmt=".4f", cmap="viridis", annot_kws={"fontsize":15}, cbar=False);
     ax.set_xlabel('True labels');
-    ax.set_ylabel('Predicted labels'); 
-    ax.set_title(title); 
+    ax.set_ylabel('Predicted labels');
+    ax.set_title(title);
     ax.xaxis.set_ticklabels(['prime', 'notprime']);
     ax.yaxis.set_ticklabels(['prime', 'notprime']);
-    plt.savefig(os.path.join(fp, title+".png").replace("\\","/"))
+    plt.savefig(save_path(title))
     plt.show()
-

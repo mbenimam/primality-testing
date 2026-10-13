@@ -1,2 +1,7 @@
 __pycache__/
 .DS_Store
+.venv/
+.pytest_cache/
+dist/
+plots/
+graphify-out/
