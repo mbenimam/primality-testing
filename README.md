@@ -2,6 +2,7 @@
 
 Is this 300-digit number prime? Dividing by every candidate would outlast the universe, so real systems ask a faster question that is allowed to be wrong, then make "wrong" vanishingly rare. I built the whole chain from scratch in Python: Euclid, fast modular exponentiation, the Fermat test, the numbers that break it, the Miller-Rabin test that fixes it, and an RSA key generator on top.
 
+[![build](https://github.com/mbenimam/primality-testing/actions/workflows/build.yml/badge.svg)](https://github.com/mbenimam/primality-testing/actions/workflows/build.yml)
 ![Python 3.14](https://img.shields.io/badge/Python-3.14-blue)
 ![36 pytest checks](https://img.shields.io/badge/tests-36%20pytest%20checks-brightgreen)
 
